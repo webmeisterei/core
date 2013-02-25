@@ -10,4 +10,12 @@
 namespace OC\DB;
 
 class AdapterSQLSrv extends Adapter {
+	public function fixupStatement($statement) {
+		$statement = preg_replace( "/\`(.*?)`/", "[$1]", $statement );
+		$statement = str_replace( 'NOW()', 'CURRENT_TIMESTAMP', $statement );
+		$statement = str_replace( 'now()', 'CURRENT_TIMESTAMP', $statement );
+		$statement = str_replace( 'LENGTH(', 'LEN(', $statement );
+		$statement = str_replace( 'SUBSTR(', 'SUBSTRING(', $statement );
+		return $statement;
+	}
 }

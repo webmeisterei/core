@@ -50,6 +50,8 @@ class Connection extends \Doctrine\DBAL\Connection {
 	 */
 	public function prepare( $statement, $limit=null, $offset=null ) {
 		$statement = $this->replaceTablePrefix($statement);
+		$statement = $this->adapter->fixupStatement($statement);
+
 		if ($limit === -1) {
 			$limit = null;
 		}
@@ -85,7 +87,7 @@ class Connection extends \Doctrine\DBAL\Connection {
 	public function executeQuery($query, array $params = array(), $types = array(), QueryCacheProfile $qcp = null)
 	{
 		$query = $this->replaceTablePrefix($query);
-		// TODO: fixup
+		$query = $this->adapter->fixupStatement($query);
 		return parent::executeQuery($query, $params, $types, $qcp);
 	}
 
@@ -104,7 +106,7 @@ class Connection extends \Doctrine\DBAL\Connection {
 	public function executeUpdate($query, array $params = array(), array $types = array())
 	{
 		$query = $this->replaceTablePrefix($query);
-		// TODO: fixup
+		$query = $this->adapter->fixupStatement($query);
 		return parent::executeUpdate($query, $params, $types);
 	}
 

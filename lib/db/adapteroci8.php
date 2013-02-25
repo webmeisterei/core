@@ -10,4 +10,9 @@
 namespace OC\DB;
 
 class AdapterOCI8 extends Adapter {
+	public function fixupStatement($statement) {
+		$statement = str_replace( '`', '"', $statement );
+		$statement = str_ireplace( 'NOW()', 'CURRENT_TIMESTAMP', $statement );
+		return $statement;
+	}
 }
