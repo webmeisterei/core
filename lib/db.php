@@ -208,27 +208,7 @@ class OC_DB {
 	 *
 	 * SQL query via Doctrine prepare(), needs to be execute()'d!
 	 */
-	static public function prepare( $query , $limit=null, $offset=null ) {
-
-		if (!is_null($limit) && $limit != -1) {
-			//Doctrine does not handle limit and offset.
-			//FIXME: check limit notation for other dbs
-			//the following sql thus might needs to take into account db ways of representing it
-			//(oracle has no LIMIT / OFFSET)
-			$limit = (int)$limit;
-			$limitsql = ' LIMIT ' . $limit;
-			if (!is_null($offset)) {
-				$offset = (int)$offset;
-				$limitsql .= ' OFFSET ' . $offset;
-			}
-			//insert limitsql
-			if (substr($query, -1) == ';') { //if query ends with ;
-				$query = substr($query, 0, -1) . $limitsql . ';';
-			} else {
-				$query.=$limitsql;
-			}
-		}
-
+	static public function prepare( $query, $limit=null, $offset=null ) {
 		// Optimize the query
 		$query = self::processQuery( $query );
 
@@ -236,7 +216,7 @@ class OC_DB {
 		// return the result
 		if (self::$backend == self::BACKEND_DOCTRINE) {
 			try {
-				$result=self::$connection->prepare($query);
+				$result=self::$connection->prepare($query, $limit, $offset);
 			} catch(\Doctrine\DBAL\DBALException $e) {
 				throw new \DatabaseException($e->getMessage(), $query);
 			}
@@ -448,66 +428,10 @@ class OC_DB {
 			$query = str_replace( 'now()', 'CURRENT_TIMESTAMP', $query );
 			$query = str_replace( 'LENGTH(', 'LEN(', $query );
 			$query = str_replace( 'SUBSTR(', 'SUBSTRING(', $query );
-            
-            $query = self::fixLimitClauseForMSSQL($query);
         }
 
 		return $query;
 	}
-
-    private static function fixLimitClauseForMSSQL($query) {
-        $limitLocation = stripos ($query, "LIMIT");
-        
-        if ( $limitLocation === false ) {
-            return $query;
-        } 
-        
-        // total == 0 means all results - not zero results
-        //
-        // First number is either total or offset, locate it by first space
-        //
-        $offset = substr ($query, $limitLocation + 5);
-        $offset = substr ($offset, 0, stripos ($offset, ' '));
-        $offset = trim ($offset);
-
-        // check for another parameter
-        if (stripos ($offset, ',') === false) {
-            // no more parameters
-            $offset = 0;
-            $total = intval ($offset);
-        } else {
-            // found another parameter
-            $offset = intval ($offset);
-
-            $total = substr ($query, $limitLocation + 5);
-            $total = substr ($total, stripos ($total, ','));
-
-            $total = substr ($total, 0, stripos ($total, ' '));
-            $total = intval ($total);
-        }
-
-        $query = trim (substr ($query, 0, $limitLocation));
-
-        if ($offset == 0 && $total !== 0) {
-            if (strpos($query, "SELECT") === false) {
-                $query = "TOP {$total} " . $query;
-            } else {
-                $query = preg_replace('/SELECT(\s*DISTINCT)?/Dsi', 'SELECT$1 TOP '.$total, $query);
-            }
-        } else if ($offset > 0) {
-            $query = preg_replace('/SELECT(\s*DISTINCT)?/Dsi', 'SELECT$1 TOP(10000000) ', $query);
-            $query = 'SELECT *
-                    FROM (SELECT sub2.*, ROW_NUMBER() OVER(ORDER BY sub2.line2) AS line3
-                    FROM (SELECT 1 AS line2, sub1.* FROM (' . $query . ') AS sub1) as sub2) AS sub3';
-
-            if ($total > 0) {
-                $query .= ' WHERE line3 BETWEEN ' . ($offset + 1) . ' AND ' . ($offset + $total);
-            } else {
-                $query .= ' WHERE line3 > ' . $offset;
-            }
-        }
-        return $query;
-    }
     
 	/**
 	 * @brief drop a table
