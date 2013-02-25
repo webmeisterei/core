@@ -56,7 +56,6 @@ class OC_DB {
 	static private $DOCTRINE=null;
 
 	static private $inTransaction=false;
-	static private $prefix=null;
 	static private $type=null;
 
 	/**
@@ -181,6 +180,7 @@ class OC_DB {
 					return false;
 			}
 			$connectionParams['wrapperClass'] = 'OC\DB\Connection';
+			$connectionParams['table_prefix'] = OC_Config::getValue( "dbtableprefix", "oc_" );
 			try {
 				self::$DOCTRINE = \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
 			} catch(\Doctrine\DBAL\DBALException $e) {
@@ -275,15 +275,13 @@ class OC_DB {
 		}
 		if( $type == 'mssql' ) {
 			if($table !== null) {
-				$prefix = OC_Config::getValue( "dbtableprefix", "oc_" );
-				$table = str_replace( '*PREFIX*', $prefix, $table );
+				$table = self::$connection->replaceTablePrefix( $table );
 			}
 			return self::$connection->lastInsertId($table);
 		} else {
 			if($table !== null) {
-				$prefix = OC_Config::getValue( "dbtableprefix", "oc_" );
 				$suffix = OC_Config::getValue( "dbsequencesuffix", "_id_seq" );
-				$table = str_replace( '*PREFIX*', $prefix, $table ).$suffix;
+				$table = self::$connection->replaceTablePrefix( $table ).$suffix;
 			}
 			return self::$connection->lastInsertId($table);
 		}
@@ -379,8 +377,7 @@ class OC_DB {
 	 */
 	public static function insertIfNotExist($table, $input) {
 		self::connect();
-		$prefix = OC_Config::getValue( "dbtableprefix", "oc_" );
-		$table = str_replace( '*PREFIX*', $prefix, $table );
+		$table = self::$connection->replaceTablePrefix( $table );
 
 		if(is_null(self::$type)) {
 			self::$type=OC_Config::getValue( "dbtype", "sqlite" );
@@ -455,15 +452,11 @@ class OC_DB {
 	 */
 	private static function processQuery( $query ) {
 		self::connect();
-		// We need Database type and table prefix
+		// We need Database type
 		if(is_null(self::$type)) {
 			self::$type=OC_Config::getValue( "dbtype", "sqlite" );
 		}
 		$type = self::$type;
-		if(is_null(self::$prefix)) {
-			self::$prefix=OC_Config::getValue( "dbtableprefix", "oc_" );
-		}
-		$prefix = self::$prefix;
 
 		// differences in escaping of table names ('`' for mysql) and getting the current timestamp
 		if( $type == 'sqlite' || $type == 'sqlite3' ) {
@@ -486,9 +479,6 @@ class OC_DB {
             
             $query = self::fixLimitClauseForMSSQL($query);
         }
-
-		// replace table name prefix
-		$query = str_replace( '*PREFIX*', $prefix, $query );
 
 		return $query;
 	}
