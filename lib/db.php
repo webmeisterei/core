@@ -196,6 +196,33 @@ class OC_DB {
 	}
 
 	/**
+	 * @brief Insert a row if a matching row doesn't exists.
+	 * @param string $table. The table to insert into in the form '*PREFIX*tableName'
+	 * @param array $input. An array of fieldname/value pairs
+	 * @returns bool The return value from DoctrineStatementWrapper->execute()
+	 */
+	public static function insertIfNotExist($table, $input) {
+		self::connect();
+		return self::$connection->insertIfNotExist($table, $input);
+	}
+
+	/**
+	 * Start a transaction
+	 */
+	public static function beginTransaction() {
+		self::connect();
+		self::$connection->beginTransaction();
+	}
+
+	/**
+	 * Commit the database changes done during a transaction that is in progress
+	 */
+	public static function commit() {
+		self::connect();
+		self::$connection->commit();
+	}
+
+	/**
 	 * @brief Disconnect
 	 *
 	 * This is good bye, good bye, yeah!
@@ -275,17 +302,6 @@ class OC_DB {
 	}
 
 	/**
-	 * @brief Insert a row if a matching row doesn't exists.
-	 * @param string $table. The table to insert into in the form '*PREFIX*tableName'
-	 * @param array $input. An array of fieldname/value pairs
-	 * @returns bool The return value from DoctrineStatementWrapper->execute()
-	 */
-	public static function insertIfNotExist($table, $input) {
-		self::connect();
-		return self::$connection->insertIfNotExist($table, $input);
-	}
-
-	/**
 	 * @brief drop a table
 	 * @param string $tableName the table to drop
 	 */
@@ -310,22 +326,6 @@ class OC_DB {
 	public static function replaceDB( $file ) {
 		self::connect();
 		OC_DB_Schema::replaceDB(self::$connection, $file);
-	}
-
-	/**
-	 * Start a transaction
-	 */
-	public static function beginTransaction() {
-		self::connect();
-		self::$connection->beginTransaction();
-	}
-
-	/**
-	 * Commit the database changes done during a transaction that is in progress
-	 */
-	public static function commit() {
-		self::connect();
-		self::$connection->commit();
 	}
 
 	/**
