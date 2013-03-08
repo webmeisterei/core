@@ -614,6 +614,18 @@ class OC_Helper {
 	* @return string
 	*/
 	public static function buildNotExistingFileName($path, $filename) {
+		$view = \OC\Files\Filesystem::getView();
+		return self::buildNotExistingFileNameForView($path, $filename, $view);
+	}
+
+	/**
+	* Adds a suffix to the name in case the file exists
+	*
+	* @param $path
+	* @param $filename
+	* @return string
+	*/
+	public static function buildNotExistingFileNameForView($path, $filename, \OC\Files\View $view) {
 		if($path==='/') {
 			$path='';
 		}
@@ -627,7 +639,7 @@ class OC_Helper {
 
 		$newpath = $path . '/' . $filename;
 		$counter = 2;
-		while (\OC\Files\Filesystem::file_exists($newpath)) {
+		while ($view->file_exists($newpath)) {
 			$newname = $name . ' (' . $counter . ')' . $ext;
 			$newpath = $path . '/' . $newname;
 			$counter++;
