@@ -460,7 +460,8 @@ class OC_DB {
 			$row = $result->fetchRow();
 			self::raiseExceptionOnError($row, 'fetching row for insertid failed');
 			return $row['id'];
-		} else if( $type === 'mssql') {
+		}
+		if( $type === 'mssql' || $type === 'oci') {
 			if($table !== null) {
 				$prefix = OC_Config::getValue( "dbtableprefix", "oc_" );
 				$table = str_replace( '*PREFIX*', $prefix, $table );
