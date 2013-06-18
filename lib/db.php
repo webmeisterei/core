@@ -919,9 +919,7 @@ class OC_DB {
 	 * @return bool
 	 */
 	public static function isError($result) {
-		if(!$result) {
-			return true;
-		}elseif(self::$backend==self::BACKEND_MDB2 and PEAR::isError($result)) {
+		if(self::$backend==self::BACKEND_MDB2 and PEAR::isError($result)) {
 			return true;
 		}else{
 			return false;
