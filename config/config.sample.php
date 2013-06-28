@@ -56,6 +56,9 @@ $CONFIG = array(
 /* Theme to use for ownCloud */
 "theme" => "",
 
+/* title used in html <title>, defautlts to ownCloud */
+"title" => "",
+
 /* Path to the parent directory of the 3rdparty directory */
 "3rdpartyroot" => "",
 
@@ -151,7 +154,7 @@ $CONFIG = array(
 /* Enable/disable X-Frame-Restriction */
 /* HIGH SECURITY RISK IF DISABLED*/
 "xframe_restriction" => true,
-	
+
 /* The directory where the user data is stored, default to data in the owncloud
  * directory. The sqlite database is also stored here, when sqlite is used.
  */

@@ -7,7 +7,7 @@
 <!--[if !IE]><!--><html class="ng-csp"><!--<![endif]-->
 	<head data-requesttoken="<?php p($_['requesttoken']); ?>">
 		<title>
-		<?php p(OC_Defaults::getName()); ?>
+		<?php p(OCP\Config::getSystemValue('title', OC_Defaults::getName())); ?>
 		</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="apple-itunes-app" content="app-id=543672169">
@@ -19,7 +19,7 @@
 		<?php foreach($_['jsfiles'] as $jsfile): ?>
 			<script type="text/javascript" src="<?php print_unescaped($jsfile); ?>"></script>
 		<?php endforeach; ?>
-	
+
 		<?php foreach($_['headers'] as $header): ?>
 			<?php
 				print_unescaped('<'.$header['tag'].' ');
@@ -41,12 +41,6 @@
 			</div></header>
 			<?php print_unescaped($_['content']); ?>
 		</div>
-		<footer>
-			<p class="info">
-				<?php OC_Util::getEditionString() === '' ? '' : p('© 2013 '); ?>
-				<a href="<?php p(OC_Defaults::getBaseUrl())?>">
-					<?php  p(OC_Defaults::getEntity()); ?></a>
-				<?php OC_Util::getEditionString() === '' ? print_unescaped(' &ndash; ') : print_unescaped('<br/>'); ?>
-			<?php p(OC_Defaults::getSlogan()); ?></p></footer>
+		<footer><?php print_unescaped($this->incThemed(footer.php)); ?></footer>
 	</body>
 </html>

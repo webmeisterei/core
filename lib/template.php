@@ -194,7 +194,7 @@ class OC_Template{
 		if($xFramePolicy) {
 			header('X-Frame-Options: Sameorigin'); // Disallow iFraming from other domains
 		}
-		
+
 		// Content Security Policy
 		// If you change the standard policy, please also change it in config.sample.php
 		$policy = OC_Config::getValue('custom_csp_policy',
@@ -478,6 +478,36 @@ class OC_Template{
 	}
 
 	/**
+     * @brief Include [themed] template
+     * @return string returns content of included template
+     *
+     * Includes another template. use <?php echo $this->inc('template'); ?> to
+     * do this. This will also look up the template in the currently used theme
+     */
+    public function incThemed( $file, $additionalparams = null ) {
+        $_ = $this->vars;
+        $l = $this->l10n;
+
+        if( !is_null($additionalparams)) {
+            $_ = array_merge( $additionalparams, $this->vars );
+        }
+
+        // Include
+        ob_start();
+
+        //this magically makes the followin includ include the themed file
+        //TODO: make this more explicit
+        $this->findTemplate($file);
+
+        include $this->path.$file.'.php';
+        $data = ob_get_contents();
+        @ob_end_clean();
+
+        // Return data
+        return $data;
+    }
+
+	/**
 	 * @brief Shortcut to print a simple page for users
 	 * @param string $application The application we render the template for
 	 * @param string $name Name of the template
@@ -525,7 +555,7 @@ class OC_Template{
 	/**
 		* @brief Print a fatal error page and terminates the script
 		* @param string $error The error message to show
-		* @param string $hint An optional hint message 
+		* @param string $hint An optional hint message
 		* Warning: All data passed to $hint needs to get sanitized using OC_Util::sanitizeHTML
 		*/
 	public static function printErrorPage( $error_msg, $hint = '' ) {
@@ -535,12 +565,12 @@ class OC_Template{
 		$content->printPage();
 		die();
 	}
-	
+
 	/**
 	 * print error page using Exception details
 	 * @param Exception $exception
 	 */
-	
+
 	public static function printExceptionErrorPage(Exception $exception) {
 		$error_msg = $exception->getMessage();
 		if ($exception->getCode()) {
